@@ -3,17 +3,79 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface Stats {
+  totalProducts: number;
+  totalOrders: number;
+  pendingOrders: number;
+  totalRevenue: number;
+}
+
 export default function VendorDashboard() {
   const [user, setUser] = useState<any>(null);
+  const [stats, setStats] = useState<Stats>({
+    totalProducts: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalRevenue: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       setUser(JSON.parse(userData));
+      fetchStats();
     } else {
       window.location.href = "/login";
     }
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        console.error("No auth token found");
+        setLoading(false);
+        return;
+      }
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      };
+
+      // Fetch products count
+      const productsResponse = await fetch("http://localhost:8080/api/products/list", {
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+        headers,
+      });
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+        const products = Array.isArray(productsData) ? productsData : 
+                        (productsData.products || productsData.data || []);
+        
+        console.log("Fetched products for stats:", products.length);
+        setStats(prev => ({
+          ...prev,
+          totalProducts: products.length,
+        }));
+      }
+
+      // TODO: Fetch other stats when backend endpoints are ready:
+      // - GET /api/vendor/orders/count
+      // - GET /api/vendor/orders/pending-count
+      // - GET /api/vendor/revenue
+
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -59,19 +121,27 @@ export default function VendorDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Products</p>
-            <p className="text-3xl font-bold text-indigo-600">0</p>
+            <p className="text-3xl font-bold text-indigo-600">
+              {loading ? "..." : stats.totalProducts}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Orders</p>
-            <p className="text-3xl font-bold text-green-600">0</p>
+            <p className="text-3xl font-bold text-green-600">
+              {loading ? "..." : stats.totalOrders}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Pending Orders</p>
-            <p className="text-3xl font-bold text-yellow-600">0</p>
+            <p className="text-3xl font-bold text-yellow-600">
+              {loading ? "..." : stats.pendingOrders}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Revenue</p>
-            <p className="text-3xl font-bold text-blue-600">$0</p>
+            <p className="text-3xl font-bold text-blue-600">
+              {loading ? "..." : `$${stats.totalRevenue.toFixed(2)}`}
+            </p>
           </div>
         </div>
 
