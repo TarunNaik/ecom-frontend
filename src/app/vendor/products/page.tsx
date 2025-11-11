@@ -40,17 +40,37 @@ export default function VendorProducts() {
 
   const fetchProducts = async () => {
     try {
+      console.log("==================== FETCH PRODUCTS ====================");
       console.log("Fetching products...");
       console.log("Current cookies:", document.cookie);
       
-      const response = await fetch("http://localhost:8080/api/products", {
+      const token = localStorage.getItem('authToken');
+      console.log("Auth token from localStorage:", token ? "✅ Present" : "❌ Not found");
+      if (token) {
+        console.log("Token length:", token.length);
+        console.log("Token preview:", token.substring(0, 50) + "...");
+      }
+      
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        console.log("✅ Authorization header set with Bearer token");
+      } else {
+        console.error("❌ No token found - request will fail!");
+      }
+      
+      console.log("Request headers:", headers);
+      console.log("Making request to: http://localhost:8080/api/products/list");
+      
+      const response = await fetch("http://localhost:8080/api/products/list", {
         method: "GET",
         mode: "cors",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
+        headers,
       });
 
       console.log("Fetch products response status:", response.status);
@@ -92,28 +112,68 @@ export default function VendorProducts() {
     });
   };
 
-  const handleAddProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddProduct = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     
+    console.log("==================== ADD PRODUCT CALLED ====================");
+    console.log("Form data:", formData);
+    
+    if (!formData.name || !formData.price || !formData.description) {
+      alert("Please fill in all fields");
+      return;
+    }
+
     try {
+      console.log("Checking localStorage...");
+      console.log("All localStorage keys:", Object.keys(localStorage));
+      
+      const token = localStorage.getItem('authToken');
+      console.log("Auth token:", token ? "✅ Present" : "❌ Not found");
+      if (token) {
+        console.log("Token length:", token.length);
+        console.log("Token preview:", token.substring(0, 50) + "...");
+        console.log("Full token:", token);
+      } else {
+        console.error("❌ CRITICAL: No token in localStorage!");
+        console.error("Available keys:", Object.keys(localStorage));
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            console.log(`  ${key}:`, localStorage.getItem(key));
+          }
+        }
+      }
+      
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        console.log("✅ Authorization header set");
+      } else {
+        console.error("❌ No token - authentication will fail!");
+      }
+      
       const productData = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        stock: parseInt(formData.stock) || 0,
         category: formData.category,
       };
-
-      console.log("Sending product data:", productData);
-      console.log("Current cookies:", document.cookie);
-
+      
+      console.log("Product data:", productData);
+      console.log("Request headers:", headers);
+      console.log("Sending POST request to: http://localhost:8080/api/products/add");
+      
       const response = await fetch("http://localhost:8080/api/products/add", {
         method: "POST",
         mode: "cors",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(productData),
       });
 
@@ -158,68 +218,99 @@ export default function VendorProducts() {
     }
   };
 
-  const handleUpdateProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const handleUpdateProduct = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     
-    if (!editingProduct) return;
+    if (!editingProduct || !editingProduct.name || !editingProduct.price || !editingProduct.description) {
+      alert("Please fill in all fields");
+      return;
+    }
 
     try {
-      const productData = {
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        category: formData.category,
+      console.log("==================== UPDATE PRODUCT ====================");
+      const token = localStorage.getItem('authToken');
+      console.log("Auth token:", token ? "✅ Present" : "❌ Not found");
+      
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
       };
-
-      const response = await fetch(`http://localhost:8080/api/products/update/${editingProduct.id}`, {
-        method: "PUT",
-        mode: "cors",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify(productData),
-      });
-
-      if (response.ok) {
-        alert("Product updated successfully!");
-        setEditingProduct(null);
-        setFormData({ name: "", description: "", price: "", stock: "", category: "" });
-        fetchProducts();
-      } else {
-        alert("Failed to update product");
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
       }
+      
+      const response = await fetch(
+        `http://localhost:8080/api/products/update/${editingProduct.id}`,
+        {
+          method: "PUT",
+          mode: "cors",
+          credentials: "include",
+          headers,
+          body: JSON.stringify(editingProduct),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 403) {
+          alert("Authentication failed. Please login again as a VENDOR.");
+          window.location.href = "/login";
+          return;
+        }
+        throw new Error(errorText || "Failed to update product");
+      }
+
+      alert("Product updated successfully!");
+      setEditingProduct(null);
+      setShowAddForm(false);
+      setFormData({ name: "", description: "", price: "", stock: "", category: "" });
+      fetchProducts();
     } catch (error) {
       console.error("Error updating product:", error);
-      alert("Error updating product");
+      alert("Error updating product: " + (error instanceof Error ? error.message : String(error)));
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const handleDeleteProduct = async (id: string | number) => {
+    if (!confirm("Are you sure you want to delete this product?")) {
+      return;
+    }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/products/delete/${productId}`, {
-        method: "DELETE",
-        mode: "cors",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        alert("Product deleted successfully!");
-        fetchProducts();
-      } else {
-        alert("Failed to delete product");
+      const token = localStorage.getItem('authToken');
+      const headers: HeadersInit = {};
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
       }
+      
+      const response = await fetch(
+        `http://localhost:8080/api/products/delete/${id}`,
+        {
+          method: "DELETE",
+          mode: "cors",
+          credentials: "include",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 403) {
+          alert("Authentication failed. Please login again as a VENDOR.");
+          window.location.href = "/login";
+          return;
+        }
+        throw new Error(errorText || "Failed to delete product");
+      }
+
+      alert("Product deleted successfully!");
+      fetchProducts();
     } catch (error) {
       console.error("Error deleting product:", error);
-      alert("Error deleting product");
+      alert("Error deleting product: " + (error instanceof Error ? error.message : String(error)));
     }
   };
 

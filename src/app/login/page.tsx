@@ -39,6 +39,72 @@ export default function Login() {
         throw new Error(responseText || "Login failed");
       }
 
+      // Check if response is a JWT token (starts with "eyJ")
+      if (responseText.trim().startsWith('eyJ')) {
+        console.log("✅ JWT token received");
+        console.log("Token length:", responseText.trim().length);
+        console.log("Token preview:", responseText.trim().substring(0, 50) + "...");
+        
+        // Store the token
+        const token = responseText.trim();
+        localStorage.setItem("authToken", token);
+        console.log("✅ Token stored in localStorage");
+        
+        // Decode JWT to get user info (basic decode, not verification)
+        try {
+          const parts = token.split('.');
+          console.log("JWT parts count:", parts.length);
+          
+          if (parts.length !== 3) {
+            throw new Error("Invalid JWT format");
+          }
+          
+          const payload = JSON.parse(atob(parts[1]));
+          console.log("✅ Decoded JWT payload:", payload);
+          console.log("Payload keys:", Object.keys(payload));
+          
+          // Extract role from JWT claims (common fields: roles, authorities, role)
+          let userRole = "buyer"; // default
+          
+          if (payload.roles) {
+            console.log("Found roles in payload:", payload.roles);
+            const roleStr = Array.isArray(payload.roles) ? payload.roles[0] : payload.roles;
+            userRole = roleStr.replace('ROLE_', '').toLowerCase();
+          } else if (payload.authorities) {
+            console.log("Found authorities in payload:", payload.authorities);
+            const roleStr = Array.isArray(payload.authorities) ? payload.authorities[0] : payload.authorities;
+            userRole = roleStr.replace('ROLE_', '').toLowerCase();
+          } else if (payload.role) {
+            console.log("Found role in payload:", payload.role);
+            userRole = payload.role.replace('ROLE_', '').toLowerCase();
+          } else {
+            console.warn("⚠️ No role found in JWT payload. Available keys:", Object.keys(payload));
+          }
+          
+          console.log("✅ Extracted role:", userRole);
+          
+          const userData = {
+            email: payload.sub || payload.email || email,
+            name: payload.name || email,
+            role: userRole
+          };
+          
+          console.log("✅ Storing user data:", userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+          
+          // Verify storage
+          console.log("✅ Verification - Token in localStorage:", localStorage.getItem("authToken") ? "YES" : "NO");
+          console.log("✅ Verification - User in localStorage:", localStorage.getItem("user"));
+          
+          alert("Login successful! Redirecting to your dashboard...");
+          window.location.href = `/dashboard/${userRole}`;
+          return;
+        } catch (e) {
+          console.error("❌ Failed to decode JWT:", e);
+          console.error("Error details:", e instanceof Error ? e.message : String(e));
+        }
+      }
+
       // Try to parse as JSON, fallback to text
       let data;
       const contentType = response.headers.get("content-type");

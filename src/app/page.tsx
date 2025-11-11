@@ -7,7 +7,7 @@ export default function Home() {
         <div className="w-full max-w-md space-y-8 text-center">
           <div>
             <h1 className="text-5xl font-bold text-gray-900 mb-2">
-              Welcome to Our Store
+              Faguni Fashion Store
             </h1>
             <p className="text-lg text-gray-600">
               Your one-stop shop for everything you need
