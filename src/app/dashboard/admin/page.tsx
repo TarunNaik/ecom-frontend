@@ -5,15 +5,107 @@ import Link from "next/link";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalVendors: 0,
+    totalProducts: 0,
+    totalRevenue: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       setUser(JSON.parse(userData));
+      fetchStats();
     } else {
       window.location.href = "/login";
     }
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const authToken = localStorage.getItem("authToken");
+      
+      if (!authToken) {
+        console.error("No auth token found");
+        setLoading(false);
+        return;
+      }
+
+      // Fetch users data
+      const usersResponse = await fetch("http://localhost:8080/api/admin/users", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`,
+        },
+      });
+
+      let totalUsers = 0;
+      let totalVendors = 0;
+
+      if (usersResponse.ok) {
+        const users = await usersResponse.json();
+        totalUsers = users.length;
+        totalVendors = users.filter((u: any) => 
+          (u.role || u.Role || "").toUpperCase() === "VENDOR"
+        ).length;
+      }
+
+      // Fetch products data (you can add this endpoint when available)
+      let totalProducts = 0;
+      try {
+        const productsResponse = await fetch("http://localhost:8080/api/admin/products", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+          },
+        });
+
+        if (productsResponse.ok) {
+          const products = await productsResponse.json();
+          totalProducts = products.length;
+        }
+      } catch (err) {
+        console.log("Products endpoint not available yet");
+      }
+
+      // Fetch revenue data (you can add this endpoint when available)
+      let totalRevenue = 0;
+      try {
+        const revenueResponse = await fetch("http://localhost:8080/api/admin/revenue", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+          },
+        });
+
+        if (revenueResponse.ok) {
+          const revenueData = await revenueResponse.json();
+          totalRevenue = revenueData.total || 0;
+        }
+      } catch (err) {
+        console.log("Revenue endpoint not available yet");
+      }
+
+      setStats({
+        totalUsers,
+        totalVendors,
+        totalProducts,
+        totalRevenue,
+      });
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -59,19 +151,27 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Users</p>
-            <p className="text-3xl font-bold text-indigo-600">0</p>
+            <p className="text-3xl font-bold text-indigo-600">
+              {loading ? "..." : stats.totalUsers}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Vendors</p>
-            <p className="text-3xl font-bold text-green-600">0</p>
+            <p className="text-3xl font-bold text-green-600">
+              {loading ? "..." : stats.totalVendors}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Products</p>
-            <p className="text-3xl font-bold text-yellow-600">0</p>
+            <p className="text-3xl font-bold text-yellow-600">
+              {loading ? "..." : stats.totalProducts}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Revenue</p>
-            <p className="text-3xl font-bold text-blue-600">$0</p>
+            <p className="text-3xl font-bold text-blue-600">
+              {loading ? "..." : `$${stats.totalRevenue.toLocaleString()}`}
+            </p>
           </div>
         </div>
 

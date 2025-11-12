@@ -13,6 +13,7 @@ export default function Register() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -24,6 +25,7 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match!");
@@ -64,46 +66,19 @@ export default function Register() {
         throw new Error(responseText || `Registration failed with status ${response.status}`);
       }
 
-      // Check if response is JSON
-      let data;
-      if (contentType && contentType.includes("application/json")) {
-        data = JSON.parse(responseText);
-        
-        // Store user data if available
-        if (data.token) {
-          localStorage.setItem("authToken", data.token);
-        }
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
-      } else {
-        // Backend returned plain text success message
-        console.log("Registration successful (text response):", responseText);
-        
-        // Since backend doesn't return user data, we need to store what we have
-        const userData = {
-          name: formData.name,
-          email: formData.email,
-          role: formData.registerAs,
-        };
-        localStorage.setItem("user", JSON.stringify(userData));
-      }
-
       console.log("Registration successful:", responseText);
       
-      // Redirect to dashboard based on role
-      const userRole = formData.registerAs.toLowerCase();
-      alert("Registration successful! Redirecting to your dashboard...");
+      // Show success message with login link
+      setSuccess("Registration successful! You can now login with your credentials.");
       
-      if (userRole === "buyer") {
-        window.location.href = "/dashboard/buyer";
-      } else if (userRole === "vendor") {
-        window.location.href = "/dashboard/vendor";
-      } else if (userRole === "admin") {
-        window.location.href = "/dashboard/admin";
-      } else {
-        window.location.href = "/dashboard";
-      }
+      // Reset form to allow registering another user
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        registerAs: "Buyer",
+      });
     } catch (err) {
       if (err instanceof TypeError && err.message.includes("fetch")) {
         setError("Cannot connect to the server. Please ensure the backend is running and the URL is correct.");
@@ -131,6 +106,15 @@ export default function Register() {
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+                {success}{" "}
+                <Link href="/login" className="font-semibold underline hover:text-green-800">
+                  Go to Login
+                </Link>
               </div>
             )}
 
