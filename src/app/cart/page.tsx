@@ -331,7 +331,10 @@ export default function CartPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
+                  {cartItems.map((item) => {
+                    console.log("Rendering cart item:", item, "productId:", item.productId);
+                    
+                    return (
                     <div
                       key={item.id}
                       className="flex items-center gap-4 pb-4 border-b border-gray-200 last:border-0"
@@ -365,7 +368,12 @@ export default function CartPage() {
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.id, item.productId, (item.quantity || 1) - 1)}
+                          onClick={() => {
+                            const prodId = item.productId || item.id;
+                            if (prodId) {
+                              updateQuantity(item.id, prodId, (item.quantity || 1) - 1);
+                            }
+                          }}
                           disabled={(item.quantity || 1) <= 1}
                           className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -373,7 +381,12 @@ export default function CartPage() {
                         </button>
                         <span className="w-12 text-center font-semibold">{item.quantity || 0}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.productId, (item.quantity || 0) + 1)}
+                          onClick={() => {
+                            const prodId = item.productId || item.id;
+                            if (prodId) {
+                              updateQuantity(item.id, prodId, (item.quantity || 0) + 1);
+                            }
+                          }}
                           disabled={(item.quantity || 0) >= (item.stock || 0)}
                           className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -390,14 +403,23 @@ export default function CartPage() {
 
                       {/* Remove Button */}
                       <button
-                        onClick={() => removeItem(item.productId)}
+                        onClick={() => {
+                          const idToRemove = item.productId || item.id;
+                          console.log("Removing item with productId:", idToRemove, "Full item:", item);
+                          if (idToRemove) {
+                            removeItem(idToRemove);
+                          } else {
+                            alert("Cannot remove item - missing product ID");
+                          }
+                        }}
                         className="text-red-600 hover:text-red-700 p-2"
                         title="Remove item"
                       >
                         🗑️
                       </button>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               </div>
             </div>
