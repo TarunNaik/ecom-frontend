@@ -211,11 +211,15 @@ export default function CartPage() {
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cartItems.reduce((total, item) => {
+      const price = item.price || 0;
+      const quantity = item.quantity || 0;
+      return total + (price * quantity);
+    }, 0);
   };
 
   const calculateItemCount = () => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0);
+    return cartItems.reduce((count, item) => count + (item.quantity || 0), 0);
   };
 
   if (!currentUser) {
@@ -322,29 +326,29 @@ export default function CartPage() {
                       {/* Product Details */}
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 mb-1">
-                          {item.productName}
+                          {item.productName || 'Unknown Product'}
                         </h3>
                         <p className="text-lg font-bold text-indigo-600">
-                          ${item.price.toFixed(2)}
+                          ${(item.price || 0).toFixed(2)}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {item.stock > 0 ? `${item.stock} available` : 'Out of stock'}
+                          {(item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock'}
                         </p>
                       </div>
 
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.id, item.productId, item.quantity - 1)}
-                          disabled={item.quantity <= 1}
+                          onClick={() => updateQuantity(item.id, item.productId, (item.quantity || 1) - 1)}
+                          disabled={(item.quantity || 1) <= 1}
                           className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           −
                         </button>
-                        <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                        <span className="w-12 text-center font-semibold">{item.quantity || 0}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.productId, item.quantity + 1)}
-                          disabled={item.quantity >= item.stock}
+                          onClick={() => updateQuantity(item.id, item.productId, (item.quantity || 0) + 1)}
+                          disabled={(item.quantity || 0) >= (item.stock || 0)}
                           className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           +
@@ -354,7 +358,7 @@ export default function CartPage() {
                       {/* Item Total */}
                       <div className="text-right w-24">
                         <p className="font-semibold text-gray-900">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
                         </p>
                       </div>
 
