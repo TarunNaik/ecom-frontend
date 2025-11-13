@@ -85,7 +85,33 @@ export default function CartPage() {
       const cartData = Array.isArray(data) ? data : [];
       console.log("Parsed cart data:", cartData);
       
-      setCartItems(cartData);
+      // Log first item to see exact structure
+      if (cartData.length > 0) {
+        console.log("First cart item keys:", Object.keys(cartData[0]));
+        console.log("First cart item:", JSON.stringify(cartData[0], null, 2));
+      }
+      
+      // Map the data to handle different property name formats
+      const mappedCartItems = cartData.map((item: any) => {
+        console.log("Mapping item:", item);
+        
+        const mapped = {
+          id: item.id || item.Id || item.ID,
+          productId: item.productId || item.ProductId || item.ProductID || item.product_id,
+          productName: item.productName || item.ProductName || item.name || item.Name || item.product?.name || item.product?.Name || 'Unknown Product',
+          productImage: item.productImage || item.ProductImage || item.imageUrl || item.ImageUrl || item.image_url || item.product?.imageUrl,
+          price: item.price || item.Price || item.product?.price || item.product?.Price || 0,
+          quantity: item.quantity || item.Quantity || item.count || item.Count || 0,
+          stock: item.stock || item.Stock || item.product?.stock || item.product?.Stock || 0,
+        };
+        
+        console.log("Mapped to:", mapped);
+        return mapped;
+      });
+      
+      console.log("Mapped cart items:", mappedCartItems);
+      
+      setCartItems(mappedCartItems);
     } catch (err) {
       if (err instanceof TypeError && err.message.includes("Failed to fetch")) {
         setError("Cannot connect to server. Please check if backend is running.");

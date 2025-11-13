@@ -65,7 +65,37 @@ export default function WishlistPage() {
       const data = responseText ? JSON.parse(responseText) : [];
       const wishlistData = Array.isArray(data) ? data : [];
       
-      setWishlistItems(wishlistData);
+      console.log("Parsed wishlist data:", wishlistData);
+      
+      // Log first item to see exact structure
+      if (wishlistData.length > 0) {
+        console.log("First wishlist item keys:", Object.keys(wishlistData[0]));
+        console.log("First wishlist item:", JSON.stringify(wishlistData[0], null, 2));
+      }
+      
+      // Map the data to handle different property name formats
+      const mappedWishlistItems = wishlistData.map((item: any) => {
+        console.log("Mapping wishlist item:", item);
+        
+        const mapped = {
+          id: item.id || item.Id || item.ID,
+          productId: item.productId || item.ProductId || item.ProductID || item.product_id,
+          productName: item.productName || item.ProductName || item.name || item.Name || item.product?.name || item.product?.Name || 'Unknown Product',
+          productDescription: item.productDescription || item.ProductDescription || item.description || item.Description || item.product?.description,
+          productImage: item.productImage || item.ProductImage || item.imageUrl || item.ImageUrl || item.image_url || item.product?.imageUrl,
+          price: item.price || item.Price || item.product?.price || item.product?.Price || 0,
+          stock: item.stock || item.Stock || item.product?.stock || item.product?.Stock || 0,
+          category: item.category || item.Category || item.product?.category,
+          addedAt: item.addedAt || item.AddedAt || item.createdAt || item.CreatedAt || new Date().toISOString(),
+        };
+        
+        console.log("Mapped wishlist to:", mapped);
+        return mapped;
+      });
+      
+      console.log("Mapped wishlist items:", mappedWishlistItems);
+      
+      setWishlistItems(mappedWishlistItems);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load wishlist");
       console.error("Error fetching wishlist:", err);
