@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
+  const [wishlistedProductIds, setWishlistedProductIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -31,6 +32,7 @@ export default function ProductsPage() {
       setCurrentUser(JSON.parse(userData));
     }
     fetchProducts();
+    fetchWishlist();
   }, []);
 
   const fetchProducts = async () => {
@@ -65,6 +67,39 @@ export default function ProductsPage() {
       console.error("Error fetching products:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchWishlist = async () => {
+    const authToken = localStorage.getItem("authToken");
+    
+    if (!authToken) {
+      // User not logged in, skip fetching wishlist
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8080/api/buyer/wishlist", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const responseText = await response.text();
+        const wishlistData = responseText ? JSON.parse(responseText) : [];
+        const wishlist = Array.isArray(wishlistData) ? wishlistData : [];
+        
+        // Extract product IDs from wishlist
+        const productIds = new Set(wishlist.map((item: any) => item.productId));
+        setWishlistedProductIds(productIds);
+      }
+    } catch (err) {
+      console.error("Error fetching wishlist:", err);
+      // Silently fail - wishlist is optional
     }
   };
 
@@ -126,6 +161,72 @@ export default function ProductsPage() {
       alert("Product added to cart!");
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to add to cart");
+    }
+  };
+
+  const handleAddToWishlist = async (productId: number) => {
+    if (!currentUser) {
+      alert("Please login to add items to wishlist");
+      window.location.href = "/login";
+      return;
+    }
+
+    try {
+      const authToken = localStorage.getItem("authToken");
+      
+      if (!authToken) {
+        alert("Please login to add items to wishlist");
+        window.location.href = "/login";
+        return;
+      }
+
+      const isInWishlist = wishlistedProductIds.has(productId);
+
+      if (isInWishlist) {
+        // Remove from wishlist
+        const response = await fetch(`http://localhost:8080/api/buyer/wishlist/remove/${productId}`, {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to remove from wishlist");
+        }
+
+        // Update local state
+        setWishlistedProductIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+
+        alert("Product removed from wishlist!");
+      } else {
+        // Add to wishlist
+        const response = await fetch(`http://localhost:8080/api/buyer/wishlist/add/${productId}`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add to wishlist");
+        }
+
+        // Update local state
+        setWishlistedProductIds(prev => new Set(prev).add(productId));
+
+        alert("Product added to wishlist!");
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update wishlist");
     }
   };
 
@@ -242,6 +343,7 @@ export default function ProductsPage() {
               const images = getProductImages(product);
               const currentIndex = currentImageIndex[product.id] || 0;
               const hasMultipleImages = images.length > 1;
+              const isInWishlist = wishlistedProductIds.has(product.id);
 
               return (
                 <div key={product.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">
@@ -254,6 +356,17 @@ export default function ProductsPage() {
                           alt={`${product.name} - Image ${currentIndex + 1}`}
                           className="w-full h-full object-cover"
                         />
+                        
+                        {/* Wishlist Heart Icon */}
+                        <button
+                          onClick={() => handleAddToWishlist(product.id)}
+                          className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg transition-all hover:scale-110"
+                          title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                        >
+                          <span className="text-red-500 text-xl">
+                            {isInWishlist ? '❤️' : '🤍'}
+                          </span>
+                        </button>
                         
                         {/* Image Navigation Arrows - Show only if multiple images */}
                         {hasMultipleImages && (
@@ -299,7 +412,20 @@ export default function ProductsPage() {
                         )}
                       </>
                     ) : (
-                      <span className="text-6xl">📦</span>
+                      <>
+                        <span className="text-6xl">📦</span>
+                        
+                        {/* Wishlist Heart Icon for products without images */}
+                        <button
+                          onClick={() => handleAddToWishlist(product.id)}
+                          className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg transition-all hover:scale-110"
+                          title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                        >
+                          <span className="text-red-500 text-xl">
+                            {isInWishlist ? '❤️' : '🤍'}
+                          </span>
+                        </button>
+                      </>
                     )}
                   </div>
 
