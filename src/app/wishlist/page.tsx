@@ -79,13 +79,13 @@ export default function WishlistPage() {
         
         const mapped = {
           id: item.id || item.Id || item.ID,
-          productId: item.productId || item.ProductId || item.ProductID || item.product_id,
-          productName: item.productName || item.ProductName || item.name || item.Name || item.product?.name || item.product?.Name || 'Unknown Product',
-          productDescription: item.productDescription || item.ProductDescription || item.description || item.Description || item.product?.description,
-          productImage: item.productImage || item.ProductImage || item.imageUrl || item.ImageUrl || item.image_url || item.product?.imageUrl,
-          price: item.price || item.Price || item.product?.price || item.product?.Price || 0,
-          stock: item.stock || item.Stock || item.product?.stock || item.product?.Stock || 0,
-          category: item.category || item.Category || item.product?.category,
+          productId: item.product?.id || item.product?.Id || item.product?.ID || item.productId || item.ProductId || item.ProductID || item.product_id,
+          productName: item.product?.name || item.product?.Name || item.productName || item.ProductName || item.name || item.Name || 'Unknown Product',
+          productDescription: item.product?.description || item.productDescription || item.ProductDescription || item.description || item.Description,
+          productImage: item.product?.imageUrl || item.productImage || item.ProductImage || item.imageUrl || item.ImageUrl || item.image_url,
+          price: item.product?.price || item.product?.Price || item.price || item.Price || 0,
+          stock: item.product?.stock || item.product?.Stock || item.stock || item.Stock || 0,
+          category: item.product?.category || item.category || item.Category,
           addedAt: item.addedAt || item.AddedAt || item.createdAt || item.CreatedAt || new Date().toISOString(),
         };
         
@@ -104,7 +104,7 @@ export default function WishlistPage() {
     }
   };
 
-  const addToCart = async (productId: number) => {
+  const addToCart = async (wishlistItemId: number) => {
     try {
       const authToken = localStorage.getItem("authToken");
 
@@ -114,7 +114,7 @@ export default function WishlistPage() {
       }
 
       const quantity = 1;
-      const response = await fetch(`http://localhost:8080/api/buyer/cart/add/${productId}/${quantity}`, {
+      const response = await fetch(`http://localhost:8080/api/buyer/cart/add/${wishlistItemId}/${quantity}`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -135,7 +135,7 @@ export default function WishlistPage() {
     }
   };
 
-  const removeFromWishlist = async (productId: number) => {
+  const removeFromWishlist = async (wishlistItemId: number) => {
     if (!confirm("Remove this item from your wishlist?")) {
       return;
     }
@@ -148,7 +148,7 @@ export default function WishlistPage() {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/buyer/wishlist/remove/${productId}`, {
+      const response = await fetch(`http://localhost:8080/api/buyer/wishlist/remove/${wishlistItemId}`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -305,7 +305,7 @@ export default function WishlistPage() {
                     
                     {/* Remove from Wishlist Button */}
                     <button
-                      onClick={() => removeFromWishlist(item.productId)}
+                      onClick={() => removeFromWishlist(item.id)}
                       className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-lg transition-all"
                       title="Remove from wishlist"
                     >
@@ -348,7 +348,7 @@ export default function WishlistPage() {
 
                     <div className="space-y-2">
                       <button
-                        onClick={() => addToCart(item.productId)}
+                        onClick={() => addToCart(item.id)}
                         disabled={(item.stock || 0) === 0}
                         className={`w-full py-2 rounded-lg font-medium transition-colors ${
                           (item.stock || 0) > 0
@@ -360,7 +360,7 @@ export default function WishlistPage() {
                       </button>
                       
                       <button
-                        onClick={() => removeFromWishlist(item.productId)}
+                        onClick={() => removeFromWishlist(item.id)}
                         className="w-full py-2 rounded-lg font-medium text-red-600 border border-red-600 hover:bg-red-50 transition-colors"
                       >
                         Remove

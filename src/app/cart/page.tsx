@@ -97,12 +97,12 @@ export default function CartPage() {
         
         const mapped = {
           id: item.id || item.Id || item.ID,
-          productId: item.productId || item.ProductId || item.ProductID || item.product_id,
-          productName: item.productName || item.ProductName || item.name || item.Name || item.product?.name || item.product?.Name || 'Unknown Product',
-          productImage: item.productImage || item.ProductImage || item.imageUrl || item.ImageUrl || item.image_url || item.product?.imageUrl,
-          price: item.price || item.Price || item.product?.price || item.product?.Price || 0,
+          productId: item.product?.id || item.product?.Id || item.product?.ID || item.productId || item.ProductId || item.ProductID || item.product_id,
+          productName: item.product?.name || item.product?.Name || item.productName || item.ProductName || item.name || item.Name || 'Unknown Product',
+          productImage: item.product?.imageUrl || item.productImage || item.ProductImage || item.imageUrl || item.ImageUrl || item.image_url,
+          price: item.product?.price || item.product?.Price || item.price || item.Price || 0,
           quantity: item.quantity || item.Quantity || item.count || item.Count || 0,
-          stock: item.stock || item.Stock || item.product?.stock || item.product?.Stock || 0,
+          stock: item.product?.stock || item.product?.Stock || item.stock || item.Stock || 0,
         };
         
         console.log("Mapped to:", mapped);
