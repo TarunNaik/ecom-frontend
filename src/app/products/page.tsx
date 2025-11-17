@@ -263,12 +263,21 @@ export default function ProductsPage() {
             </div>
             <div className="flex gap-4">
               {currentUser && (
-                <Link
-                  href="/cart"
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                  🛒 Cart
-                </Link>
+                <>
+                  <Link
+                    href="/wishlist"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    ❤️ Wishlist
+                  </Link>
+
+                  <Link
+                    href="/cart"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    🛒 Cart
+                  </Link>
+                </>
               )}
               {!currentUser && (
                 <Link

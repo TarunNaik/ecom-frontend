@@ -2,25 +2,94 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from 'next/navigation';
+
+interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  imageUrl?: string;
+}
 
 export default function BuyerDashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    } else {
-      // Redirect to login if not authenticated
-      window.location.href = "/login";
-    }
-  }, []);
+    const fetchUserProfile = async () => {
+      setLoading(true);
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          router.push('/login');
+          return;
+        }
+
+        const response = await fetch('http://localhost:8080/api/auth/profile', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            router.push('/login');
+          }
+          throw new Error('Failed to fetch user profile');
+        }
+
+        const userData = await response.json();
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        const localUser = localStorage.getItem('user');
+        if(localUser) {
+            setUser(JSON.parse(localUser));
+        } else {
+            router.push('/login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
     window.location.href = "/";
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error && !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-red-500 text-center">
+          <p>{error}</p>
+          <Link href="/login" className="text-indigo-600 hover:underline mt-2 inline-block">
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -48,12 +117,23 @@ export default function BuyerDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-2">
-            Welcome, {user.name || user.Name || user.email?.split('@')[0] || 'User'}!
-          </h2>
-          <p className="text-gray-600">Email: {user.email || user.Email || 'N/A'}</p>
-          <p className="text-gray-600">Role: {(user.role || user.Role || '').toUpperCase()}</p>
+        <div className="bg-white rounded-lg shadow p-6 mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">
+              Welcome, {user.name || 'User'}!
+            </h2>
+            <p className="text-gray-600">Email: {user.email || 'N/A'}</p>
+            <p className="text-gray-600">Role: {user.role.toUpperCase()}</p>
+          </div>
+          <div className="ml-4">
+            <Image
+              src={user.imageUrl || `https://i.pravatar.cc/150?u=${user.email}`}
+              alt="User Avatar"
+              className="w-30 h-25 rounded-full"
+              width={64}
+              height={64}
+            />
+          </div>
         </div>
 
         {/* Dashboard Grid */}
