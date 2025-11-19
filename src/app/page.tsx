@@ -22,8 +22,13 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  // const goToPrevious = () => {
+  //   setCurrentIndex((prevIndex) => (prevIndex - 1 + carouselImages.length) % carouselImages.length);
+  // };
   const goToPrevious = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + carouselImages.length) % carouselImages.length);
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? carouselImages.length - 1 : prevIndex - 1
+    );
   };
 
   const goToNext = () => {
@@ -61,43 +66,146 @@ export default function Home() {
 
       {/* Hero Section */}
       <main className="pt-24">
-        <section className="container mx-auto rounded-lg overflow-hidden relative h-[80vh]">
-          {carouselImages.map((src, index) => (
-            <Image 
-              key={index} 
-              src={src} 
-              alt={`Saree Style ${index + 1}`} 
-              fill 
+        <section className="hero" style={{ marginTop: "60px" }}>
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: "800px",
+              height: "400px",
+              margin: "auto",
+              borderRadius: "10px",
+              overflow: "hidden",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+            }}
+          >
+            <Image
+              key={carouselImages[currentIndex]}
+              src={carouselImages[currentIndex]}
+              alt={`Saree Style ${currentIndex + 1}`}
+              fill
+              style={{
+                objectFit: "cover",
+                objectPosition: "top",
+                borderRadius: "10px"
+              }}
+              priority
               unoptimized={true}
-              style={{ objectFit: 'cover', opacity: index === currentIndex ? 1 : 0 }} 
-              className="transition-opacity duration-1000"
             />
-          ))}
 
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-          
-          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white p-10">
-            <h1 className="text-5xl font-extrabold mb-4">Elegant Sarees</h1>
-            <p className="text-xl mb-8">Discover our stunning collection</p>
-            <Link href="/products" className="bg-indigo-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-indigo-700">Shop Now</Link>
+            {/* Carousel Navigation Arrows */}
+            <button
+              onClick={goToPrevious}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "10px",
+                transform: "translateY(-50%)",
+                backgroundColor: "rgba(0,0,0,0.5)",
+                color: "white",
+                border: "none",
+                padding: "10px",
+                cursor: "pointer",
+                borderRadius: "50%",
+                zIndex: 2,
+              }}
+              aria-label="Previous Slide"
+            >
+              &#10094;
+            </button>
+            <button
+              onClick={goToNext}
+              style={{
+                position: "absolute",
+                top: "50%",
+                right: "10px",
+                transform: "translateY(-50%)",
+                backgroundColor: "rgba(0,0,0,0.5)",
+                color: "white",
+                border: "none",
+                padding: "10px",
+                cursor: "pointer",
+                borderRadius: "50%",
+                zIndex: 2,
+              }}
+              aria-label="Next Slide"
+            >
+              &#10095;
+            </button>
+
+            {/* Carousel Dots */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "15px",
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                gap: "10px",
+                zIndex: 2,
+              }}
+            >
+              {carouselImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    borderRadius: "50%",
+                    border: "2px solid white",
+                    backgroundColor: idx === currentIndex ? "white" : "transparent",
+                    cursor: "pointer",
+                    transition: "background-color 0.3s ease",
+                  }}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
-          
-          {/* Carousel Arrows */}
-          <button onClick={goToPrevious} className="absolute left-5 top-1/2 -translate-y-1/2 z-20 p-3 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-75 transition">
-            &#10094;
-          </button>
-          <button onClick={goToNext} className="absolute right-5 top-1/2 -translate-y-1/2 z-20 p-3 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-75 transition">
-            &#10095;
-          </button>
 
-          {/* Carousel Dots */}
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
-            {carouselImages.map((_, idx) => (
-              <button key={idx} onClick={() => setCurrentIndex(idx)} className={`w-3 h-3 rounded-full transition-all ${idx === currentIndex ? 'bg-white' : 'bg-white bg-opacity-50'}`}></button>
-            ))}
-          </div>
-
+          {/* Hero Text Content */}
+          <section className="hero" style={{ textAlign: 'center', padding: '50px 20px', backgroundColor: '#fff' }}>
+            <h1 style={{
+              fontFamily: "'Raleway', sans-serif",
+              fontSize: '3rem',
+              fontWeight: '700',
+              color: '#222',
+              marginBottom: '20px'
+            }}>Elegant Sarees</h1>
+            <p style={{
+              fontFamily: "'Raleway', sans-serif",
+              fontSize: '1.25rem',
+              color: '#555',
+              marginBottom: '30px',
+            }}>Discover our stunning collection</p>
+            <button style={{
+              padding: '12px 24px',
+              fontSize: '1rem',
+              fontFamily: "'Raleway', sans-serif",
+              border: '2px solid #222',
+              backgroundColor: '#fff',
+              color: '#222',
+              cursor: 'pointer',
+              borderRadius: '4px',
+              transition: 'background-color 0.3s, color 0.3s',
+            }}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.backgroundColor = '#222';
+                target.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.backgroundColor = '#fff';
+                target.style.color = '#222';
+              }}
+            >
+              Shop Now
+            </button>
+          </section>
         </section>
+
 
         {/* Featured Products */}
         <section className="py-20">
@@ -159,7 +267,7 @@ export default function Home() {
             <p className="text-gray-700 mb-8">Get the latest updates on new products and upcoming sales</p>
             <form className="max-w-md mx-auto">
               <div className="flex items-center">
-                <input type="email" placeholder="Enter your email" className="w-full px-4 py-3 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-600"/>
+                <input type="email" placeholder="Enter your email" className="w-full px-4 py-3 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-600" />
                 <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-r-md hover:bg-indigo-700">Subscribe</button>
               </div>
             </form>
