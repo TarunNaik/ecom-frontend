@@ -47,9 +47,9 @@ export default function Home() {
             </Link>
           </div>
           <div className="hidden lg:flex items-center space-x-8">
-            <Link href="/products" className="hover:text-indigo-600">Men</Link>
-            <Link href="/products" className="hover:text-indigo-600">Women</Link>
-            <Link href="/products" className="hover:text-indigo-600">Kids</Link>
+            <Link href="/browse-products" className="hover:text-indigo-600">Men</Link>
+            <Link href="/browse-products" className="hover:text-indigo-600">Women</Link>
+            <Link href="/browse-products" className="hover:text-indigo-600">Kids</Link>
             <Link href="/contact" className="hover:text-indigo-600">Contact</Link>
           </div>
           <div className="flex items-center space-x-4">
@@ -201,7 +201,9 @@ export default function Home() {
                 target.style.color = '#222';
               }}
             >
-              Shop Now
+              <Link href="/browse-products">
+                Shop Now
+              </Link>
             </button>
           </section>
         </section>
@@ -286,9 +288,9 @@ export default function Home() {
             <div>
               <h3 className="font-bold text-lg mb-4">Categories</h3>
               <ul>
-                <li><Link href="/products" className="hover:text-indigo-400">Men</Link></li>
-                <li><Link href="/products" className="hover:text-indigo-400">Women</Link></li>
-                <li><Link href="/products" className="hover:text-indigo-400">Kids</Link></li>
+                <li><Link href="/browse-products" className="hover:text-indigo-400">Men</Link></li>
+                <li><Link href="/browse-products" className="hover:text-indigo-400">Women</Link></li>
+                <li><Link href="/browse-products" className="hover:text-indigo-400">Kids</Link></li>
               </ul>
             </div>
             <div>

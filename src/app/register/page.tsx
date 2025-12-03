@@ -45,9 +45,8 @@ export default function Register() {
 
       console.log("Sending registration data:", registrationData);
 
-      const response = await fetch("http://localhost:8080/api/auth/register", {
+      const response = await fetch("http://localhost:3000/api/v1/auth/register", {
         method: "POST",
-        credentials: "include", // Include cookies for session-based auth
         headers: {
           "Content-Type": "application/json",
         },
