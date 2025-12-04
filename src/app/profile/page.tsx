@@ -41,7 +41,7 @@ export default function ProfilePage() {
           return;
         }
 
-        const response = await fetch('http://localhost:8080/api/auth/profile', {
+        const response = await fetch('/api/v1/auth/profile', {
           method: 'GET',
           credentials: 'include',
           headers: {

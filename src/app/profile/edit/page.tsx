@@ -55,7 +55,7 @@ export default function EditProfilePage() {
           return;
         }
 
-        const response = await fetch('http://localhost:8080/api/auth/profile', {
+        const response = await fetch('/api/v1/auth/profile', {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -168,7 +168,7 @@ export default function EditProfilePage() {
         return;
       }
 
-      const response = await fetch('http://localhost:8080/api/auth/profile/update', {
+      const response = await fetch('/api/v1/auth/profile/update', {
         method: 'PUT',
         credentials: 'include',
         headers: {
