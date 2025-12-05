@@ -39,27 +39,27 @@ export default function Login() {
       const responseData = await response.json();
       
       if (responseData && responseData.token) {
-        const token = responseData.token;
+        const { token, name, role } = responseData;
         localStorage.setItem("authToken", token);
-        
-        try {
-          const parts = token.split('.');
-          if (parts.length !== 3) {
-            throw new Error("Invalid JWT format");
-          }
-          const payload = JSON.parse(atob(parts[1]));
-          const userRole = payload.role.toLowerCase();
-          
-          const userData = {
-            email: payload.email,
-            name: payload.name || 'User',
-            role: userRole
-          };
-          localStorage.setItem("user", JSON.stringify(userData));
 
-          router.push(`/dashboard/${userRole}`);
-        } catch (e) {
-          setError("Login successful, but failed to process user role.");
+        const userProfile = { name, role };
+        localStorage.setItem('user', JSON.stringify(userProfile));
+
+        const userRole = userProfile.role.toLowerCase();
+        switch (userRole) {
+          case 'admin':
+            router.push('/dashboard/admin');
+            break;
+          case 'vendor':
+            router.push('/dashboard/vendor');
+            break;
+          case 'buyer':
+            router.push('/dashboard/buyer');
+            break;
+          default:
+            // Fallback to a default dashboard or show an error
+            router.push('/');
+            break;
         }
       } else {
          setError(responseData.message || "An unknown error occurred.");

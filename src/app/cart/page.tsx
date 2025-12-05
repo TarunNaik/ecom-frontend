@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { replaceCurrency } from "../../utils/currency";
 
 interface CartItem {
   id: number;
@@ -358,7 +359,7 @@ export default function CartPage() {
                           {item.productName || 'Unknown Product'}
                         </h3>
                         <p className="text-lg font-bold text-indigo-600">
-                          ${(item.price || 0).toFixed(2)}
+                          {replaceCurrency(item.price || 0)}
                         </p>
                         <p className="text-sm text-gray-500">
                           {(item.stock || 0) > 0 ? `${item.stock} available` : 'Out of stock'}
@@ -397,7 +398,7 @@ export default function CartPage() {
                       {/* Item Total */}
                       <div className="text-right w-24">
                         <p className="font-semibold text-gray-900">
-                          ${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                          {replaceCurrency((item.price || 0) * (item.quantity || 0))}
                         </p>
                       </div>
 
@@ -432,7 +433,7 @@ export default function CartPage() {
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal ({calculateItemCount()} items)</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
+                    <span>{replaceCurrency(calculateTotal())}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
@@ -444,7 +445,7 @@ export default function CartPage() {
                   </div>
                   <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-indigo-600">${calculateTotal().toFixed(2)}</span>
+                    <span className="text-indigo-600">{replaceCurrency(calculateTotal())}</span>
                   </div>
                 </div>
 

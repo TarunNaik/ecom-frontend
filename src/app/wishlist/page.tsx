@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { replaceCurrency } from "../../utils/currency";
 
 interface WishlistItem {
   id: number;
@@ -335,7 +336,7 @@ export default function WishlistPage() {
 
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-2xl font-bold text-indigo-600">
-                        ${(item.price || 0).toFixed(2)}
+                        {replaceCurrency(item.price || 0)}
                       </span>
                       <span className={`text-sm ${(item.stock || 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {(item.stock || 0) > 0 ? `${item.stock} in stock` : 'Out of stock'}

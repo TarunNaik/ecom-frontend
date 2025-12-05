@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { replaceCurrency } from "../../utils/currency";
 
 interface OrderItem {
   id: number;
@@ -201,7 +202,7 @@ export default function OrdersPage() {
                       <div className="text-right">
                         <p className="text-sm text-gray-600">Total</p>
                         <p className="text-lg font-bold text-gray-900">
-                          ${order.totalAmount.toFixed(2)}
+                          {replaceCurrency(order.totalAmount)}
                         </p>
                       </div>
                     </div>
@@ -238,9 +239,9 @@ export default function OrdersPage() {
                         {/* Price */}
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            {replaceCurrency(item.price * item.quantity)}
                           </p>
-                          <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
+                          <p className="text-sm text-gray-600">{replaceCurrency(item.price)} each</p>
                         </div>
                       </div>
                     ))}

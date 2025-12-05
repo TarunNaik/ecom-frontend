@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { replaceCurrency } from "../../utils/currency";
 
 interface Product {
   id: number;
@@ -183,7 +184,7 @@ export default function BrowseProductsPage() {
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
                     <div className="mb-3"><span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{product.category}</span></div>
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-2xl font-bold text-indigo-600">${product.price.toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-indigo-600">{replaceCurrency(product.price)}</span>
                       <span className={`text-sm ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</span>
                     </div>
                     {product.vendorName && (<p className="text-xs text-gray-500 mb-3">Sold by: {product.vendorName}</p>)}

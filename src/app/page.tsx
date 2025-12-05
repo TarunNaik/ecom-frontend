@@ -221,7 +221,7 @@ export default function Home() {
                 </div>
                 <div className="p-6">
                   <h3 className="font-bold text-lg text-gray-800 mb-2">Classic Watch</h3>
-                  <p className="text-gray-600 mb-4">$150</p>
+                  <p className="text-gray-600 mb-4">₹12500</p>
                   <Link href="/products/1" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">View Item</Link>
                 </div>
               </div>
@@ -232,7 +232,7 @@ export default function Home() {
                 </div>
                 <div className="p-6">
                   <h3 className="font-bold text-lg text-gray-800 mb-2">Running Shoes</h3>
-                  <p className="text-gray-600 mb-4">$120</p>
+                  <p className="text-gray-600 mb-4">₹10000</p>
                   <Link href="/products/2" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">View Item</Link>
                 </div>
               </div>
@@ -243,7 +243,7 @@ export default function Home() {
                 </div>
                 <div className="p-6">
                   <h3 className="font-bold text-lg text-gray-800 mb-2">Headphones</h3>
-                  <p className="text-gray-600 mb-4">$80</p>
+                  <p className="text-gray-600 mb-4">₹6500</p>
                   <Link href="/products/3" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">View Item</Link>
                 </div>
               </div>
@@ -254,7 +254,7 @@ export default function Home() {
                 </div>
                 <div className="p-6">
                   <h3 className="font-bold text-lg text-gray-800 mb-2">Sunglasses</h3>
-                  <p className="text-gray-600 mb-4">$95</p>
+                  <p className="text-gray-600 mb-4">₹8000</p>
                   <Link href="/products/4" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">View Item</Link>
                 </div>
               </div>

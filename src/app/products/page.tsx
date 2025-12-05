@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { replaceCurrency } from "../../utils/currency";
 
 interface Product {
   id: number;
@@ -455,7 +456,7 @@ export default function ProductsPage() {
 
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-2xl font-bold text-indigo-600">
-                        ${product.price.toFixed(2)}
+                        {replaceCurrency(product.price)}
                       </span>
                       <span className={`text-sm ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}

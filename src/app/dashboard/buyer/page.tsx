@@ -22,47 +22,24 @@ export default function BuyerDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      setLoading(true);
-      try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          router.push('/login');
-          return;
-        }
+    const storedUser = localStorage.getItem('user');
+    const authToken = localStorage.getItem('authToken');
 
-        const response = await fetch('/api/v1/auth/profile', {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
+    if (!authToken || !storedUser) {
+      router.push('/login');
+      return;
+    }
 
-        if (!response.ok) {
-          if (response.status === 401 || response.status === 403) {
-            router.push('/login');
-          }
-          throw new Error('Failed to fetch user profile');
-        }
+    const userData = JSON.parse(storedUser);
+    if (userData.role.toLowerCase() !== 'buyer') {
+      // If the role is not 'buyer', redirect to the appropriate dashboard or login
+      // For now, we'll just redirect to login to prevent access.
+      router.push('/login');
+      return;
+    }
 
-        const userData = await response.json();
-        if (userData.role.toLowerCase() !== 'buyer') {
-          router.push('/login');
-          return;
-        }
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Your session may have expired. Please log in again.');
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserProfile();
+    setUser(userData);
+    setLoading(false);
   }, [router]);
 
   if (loading) {

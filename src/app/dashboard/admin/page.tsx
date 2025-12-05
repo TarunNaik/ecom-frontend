@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { replaceCurrency } from "../../../utils/currency";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -170,7 +171,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm mb-1">Total Revenue</p>
             <p className="text-3xl font-bold text-blue-600">
-              {loading ? "..." : `$${stats.totalRevenue.toLocaleString()}`}
+              {loading ? "..." : `${replaceCurrency(stats.totalRevenue)}`}
             </p>
           </div>
         </div>

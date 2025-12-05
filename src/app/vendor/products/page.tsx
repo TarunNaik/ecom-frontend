@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { replaceCurrency } from "../../../utils/currency";
 
 interface Product {
   id: string;
@@ -421,7 +422,7 @@ export default function VendorProducts() {
 
                 <div>
                   <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                    Price ($)
+                    Price
                   </label>
                   <input
                     id="price"
@@ -515,7 +516,7 @@ export default function VendorProducts() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Price:</span>
-                      <span className="font-medium text-green-600">${product.price.toFixed(2)}</span>
+                      <span className="font-medium text-green-600">{replaceCurrency(product.price)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Stock:</span>
