@@ -51,7 +51,17 @@ export default function VendorProducts() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/v1/product/master-data/categories");
+      const token = localStorage.getItem("authToken");
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const response = await fetch("/api/v1/product/master-data/categories", {
+        method: "GET",
+        headers,
+      });
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
@@ -268,13 +278,20 @@ export default function VendorProducts() {
       }
       
       const response = await fetch(
-        `http://localhost:8080/api/products/update/${editingProduct.id}`,
+        `/api/v1/product/update/${editingProduct.id}`,
         {
           method: "PUT",
           mode: "cors",
           credentials: "include",
           headers,
-          body: JSON.stringify(editingProduct),
+          body: JSON.stringify({
+            name: formData.name,
+            description: formData.description,
+            price: parseFloat(formData.price),
+            stock: parseInt(formData.stock),
+            category: formData.category,
+            image: formData.image,
+          }),
         }
       );
 
@@ -313,7 +330,7 @@ export default function VendorProducts() {
       }
       
       const response = await fetch(
-        `http://localhost:8080/api/products/delete/${id}`,
+        `/api/v1/product/delete/${id}`,
         {
           method: "DELETE",
           mode: "cors",
