@@ -31,13 +31,12 @@ export default function Login() {
         body: JSON.stringify(loginData),
       });
 
+      const responseData = await response.json();
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Login failed");
+        setError(responseData.message || "Login failed");
       }
 
-      const responseData = await response.json();
-      
+
       if (responseData && responseData.token) {
         const { token, name, role } = responseData;
         localStorage.setItem("authToken", token);
@@ -63,9 +62,10 @@ export default function Login() {
         }
       } else {
          setError(responseData.message || "An unknown error occurred.");
+         return;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");
+      setError("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }

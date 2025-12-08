@@ -14,18 +14,27 @@ interface Product {
   image?: string;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+}
+
 export default function VendorProducts() {
   const [user, setUser] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     stock: "",
     category: "",
+    image: "",
   });
 
   useEffect(() => {
@@ -34,10 +43,25 @@ export default function VendorProducts() {
       setUser(JSON.parse(userData));
       // TODO: Fetch products from backend
       fetchProducts();
+      fetchCategories();
     } else {
       window.location.href = "/login";
     }
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/v1/product/master-data/categories");
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      } else {
+        console.error("Failed to fetch categories");
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -65,9 +89,9 @@ export default function VendorProducts() {
       }
       
       console.log("Request headers:", headers);
-      console.log("Making request to: http://localhost:8080/api/products/list");
+      console.log("Making request to: /api/v1/product/list");
       
-      const response = await fetch("http://localhost:8080/api/products/list", {
+      const response = await fetch("/api/v1/product/list", {
         method: "GET",
         mode: "cors",
         credentials: "include",
@@ -121,8 +145,8 @@ export default function VendorProducts() {
     console.log("==================== ADD PRODUCT CALLED ====================");
     console.log("Form data:", formData);
     
-    if (!formData.name || !formData.price || !formData.description) {
-      alert("Please fill in all fields");
+    if (!formData.name || !formData.price || !formData.stock || !formData.category) {
+      alert("Please fill in all mandatory fields: Name, Price, Stock, and Category.");
       return;
     }
 
@@ -164,13 +188,14 @@ export default function VendorProducts() {
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock) || 0,
         category: formData.category,
+        image: formData.image,
       };
       
       console.log("Product data:", productData);
       console.log("Request headers:", headers);
-      console.log("Sending POST request to: http://localhost:8080/api/products/add");
+      console.log("Sending POST request to: /api/v1/product/add");
       
-      const response = await fetch("http://localhost:8080/api/products/add", {
+      const response = await fetch("/api/v1/product/add", {
         method: "POST",
         mode: "cors",
         credentials: "include",
@@ -207,7 +232,7 @@ export default function VendorProducts() {
 
       alert("Product added successfully!");
       setShowAddForm(false);
-      setFormData({ name: "", description: "", price: "", stock: "", category: "" });
+      setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "" });
       fetchProducts();
     } catch (error) {
       console.error("Error adding product:", error);
@@ -224,8 +249,8 @@ export default function VendorProducts() {
       e.preventDefault();
     }
     
-    if (!editingProduct || !editingProduct.name || !editingProduct.price || !editingProduct.description) {
-      alert("Please fill in all fields");
+    if (!editingProduct || !formData.name || !formData.price || !formData.stock || !formData.category) {
+      alert("Please fill in all mandatory fields: Name, Price, Stock, and Category.");
       return;
     }
 
@@ -266,7 +291,7 @@ export default function VendorProducts() {
       alert("Product updated successfully!");
       setEditingProduct(null);
       setShowAddForm(false);
-      setFormData({ name: "", description: "", price: "", stock: "", category: "" });
+      setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "" });
       fetchProducts();
     } catch (error) {
       console.error("Error updating product:", error);
@@ -323,6 +348,7 @@ export default function VendorProducts() {
       price: product.price.toString(),
       stock: product.stock.toString(),
       category: product.category,
+      image: product.image || "",
     });
     setShowAddForm(true);
   };
@@ -330,7 +356,7 @@ export default function VendorProducts() {
   const cancelEdit = () => {
     setEditingProduct(null);
     setShowAddForm(false);
-    setFormData({ name: "", description: "", price: "", stock: "", category: "" });
+    setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "" });
   };
 
   const handleLogout = () => {
@@ -408,16 +434,23 @@ export default function VendorProducts() {
                   <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
                     Category
                   </label>
-                  <input
+                  <select
                     id="category"
                     name="category"
-                    type="text"
                     required
                     value={formData.category}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                    placeholder="e.g., Electronics, Clothing"
-                  />
+                  >
+                    <option value="" disabled>
+                      Select a category
+                    </option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -461,12 +494,26 @@ export default function VendorProducts() {
                 <textarea
                   id="description"
                   name="description"
-                  required
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   placeholder="Enter product description"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Image (Optional)
+                </label>
+                <input
+                  id="image"
+                  name="image"
+                  type="text"
+                  value={formData.image}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  placeholder="Enter image URL"
                 />
               </div>
 

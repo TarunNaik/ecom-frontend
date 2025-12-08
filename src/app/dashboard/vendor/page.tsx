@@ -61,7 +61,7 @@ export default function VendorDashboard() {
       };
 
       // Fetch products count
-      const productsResponse = await fetch("http://localhost:8080/api/products/list", {
+      const productsResponse = await fetch("/api/v1/product/list", {
         method: "GET",
         mode: "cors",
         credentials: "include",
@@ -107,6 +107,28 @@ export default function VendorDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <WelcomeBanner user={user} />
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <DashboardCard
+            title="Total Products"
+            value={stats.totalProducts}
+            icon="📦"
+          />
+          <DashboardCard
+            title="Total Orders"
+            value={stats.totalOrders}
+            icon="🛒"
+          />
+          <DashboardCard
+            title="Pending Orders"
+            value={stats.pendingOrders}
+            icon="⏳"
+          />
+          <DashboardCard
+            title="Total Revenue"
+            value={replaceCurrency(stats.totalRevenue)}
+            icon="💰"
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <DashboardCard
             title="My Products"
