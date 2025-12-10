@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { replaceCurrency } from "../../../utils/currency";
+import { getBrowserCurrency } from "../../../utils/locale";
+import { currencies } from "../../../utils/currencies";
+import Header from "@/components/Header";
 
 interface Product {
   id: string;
@@ -12,6 +14,7 @@ interface Product {
   stock: number;
   category: string;
   image?: string;
+  currency?: string;
 }
 
 interface Category {
@@ -35,6 +38,7 @@ export default function VendorProducts() {
     stock: "",
     category: "",
     image: "",
+    currency: getBrowserCurrency(),
   });
 
   useEffect(() => {
@@ -48,6 +52,7 @@ export default function VendorProducts() {
       window.location.href = "/login";
     }
   }, []);
+
 
   const fetchCategories = async () => {
     try {
@@ -199,6 +204,7 @@ export default function VendorProducts() {
         stock: parseInt(formData.stock) || 0,
         category: formData.category,
         image: formData.image,
+        currency: formData.currency,
       };
       
       console.log("Product data:", productData);
@@ -242,7 +248,7 @@ export default function VendorProducts() {
 
       alert("Product added successfully!");
       setShowAddForm(false);
-      setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "" });
+      setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "", currency: "" });
       fetchProducts();
     } catch (error) {
       console.error("Error adding product:", error);
@@ -291,6 +297,7 @@ export default function VendorProducts() {
             stock: parseInt(formData.stock),
             category: formData.category,
             image: formData.image,
+            currency: formData.currency,
           }),
         }
       );
@@ -308,7 +315,7 @@ export default function VendorProducts() {
       alert("Product updated successfully!");
       setEditingProduct(null);
       setShowAddForm(false);
-      setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "" });
+      setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "", currency: "" });
       fetchProducts();
     } catch (error) {
       console.error("Error updating product:", error);
@@ -366,6 +373,7 @@ export default function VendorProducts() {
       stock: product.stock.toString(),
       category: product.category,
       image: product.image || "",
+      currency: product.currency || "",
     });
     setShowAddForm(true);
   };
@@ -373,7 +381,7 @@ export default function VendorProducts() {
   const cancelEdit = () => {
     setEditingProduct(null);
     setShowAddForm(false);
-    setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "" });
+    setFormData({ name: "", description: "", price: "", stock: "", category: "", image: "", currency: "" });
   };
 
   const handleLogout = () => {
@@ -391,36 +399,32 @@ export default function VendorProducts() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard/vendor" className="text-indigo-600 hover:text-indigo-700">
-              ← Back to Dashboard
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Manage Products</h1>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-100">
+      <Header user={user} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Add Product Button */}
-        <div className="mb-6 flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Your Products</h2>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            {showAddForm ? "Cancel" : "+ Add New Product"}
-          </button>
+        {/* Page Header */}
+        <div className="mb-6 md:flex md:items-center md:justify-between">
+          <div className="flex-1 min-w-0">
+            <Link
+              href="/dashboard/vendor"
+              className="text-sm text-indigo-600 hover:text-indigo-800"
+            >
+              &larr; Back to Dashboard
+            </Link>
+            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate mt-1">
+              My Products
+            </h2>
+          </div>
+          <div className="mt-4 flex md:mt-0 md:ml-4">
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              {showAddForm ? "Cancel" : "+ Add New Product"}
+            </button>
+          </div>
         </div>
 
         {/* Add/Edit Product Form */}
@@ -474,17 +478,32 @@ export default function VendorProducts() {
                   <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
                     Price
                   </label>
-                  <input
-                    id="price"
-                    name="price"
-                    type="number"
-                    step="0.01"
-                    required
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                    placeholder="0.00"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      id="price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      required
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                      placeholder="0.00"
+                    />
+                    <select
+                      id="currency"
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleInputChange}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                    >
+                      {currencies.map((currency) => (
+                        <option key={currency.value} value={currency.value}>
+                          {currency.value}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
@@ -580,7 +599,9 @@ export default function VendorProducts() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Price:</span>
-                      <span className="font-medium text-green-600">{replaceCurrency(product.price)}</span>
+                      <span className="font-medium text-green-600">
+                        {product.currency} {product.price}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Stock:</span>
