@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { replaceCurrency } from "../../utils/currency";
+import Header from "@/components/Header";
+import { useCart } from "@/app/context/CartContext";
 
 interface Product {
   id: number;
@@ -23,8 +25,13 @@ export default function BrowseProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
     fetchProducts();
   }, []);
 
@@ -32,10 +39,21 @@ export default function BrowseProductsPage() {
     setLoading(true);
     setError("");
     try {
+      const token = localStorage.getItem('authToken');
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       // Fetch products without authentication
-      const response = await fetch("http://localhost:8080/api/guest/products", {
+      const response = await fetch("/api/v1/product/list-all", {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        mode: "cors",
+        credentials: "include",
+        headers,
       });
 
       if (!response.ok) {
@@ -76,6 +94,13 @@ export default function BrowseProductsPage() {
     return [];
   };
 
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (product: Product) => {
+    addToCart({ ...product, quantity: 1 });
+    alert(`${product.name} has been added to your cart.`);
+  };
+
   const categories = ["ALL", ...new Set(products.map(p => p.category))];
 
   const filteredProducts = products.filter((product) => {
@@ -90,21 +115,24 @@ export default function BrowseProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Browse All Products</h1>
-            <Link
-              href="/login"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Login to Buy or Add to Wishlist
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header user={user} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-6 md:flex md:items-center md:justify-between">
+          <div className="flex-1 min-w-0">
+            <Link
+              href="/dashboard/buyer"
+              className="text-sm text-indigo-600 hover:text-indigo-800"
+            >
+              &larr; Back to Dashboard
+            </Link>
+            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate mt-1">
+              Browse Products
+            </h2>
+          </div>
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
             {error}
@@ -188,9 +216,23 @@ export default function BrowseProductsPage() {
                       <span className={`text-sm ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</span>
                     </div>
                     {product.vendorName && (<p className="text-xs text-gray-500 mb-3">Sold by: {product.vendorName}</p>)}
-                    <Link href="/login" className="w-full block text-center py-2 rounded-lg font-medium transition-colors bg-indigo-600 text-white hover:bg-indigo-700">
-                      Login to Buy
-                    </Link>
+                    {user ? (
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        disabled={product.stock === 0}
+                        className={`w-full py-2 rounded-lg font-medium transition-colors ${
+                          product.stock > 0
+                            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                            : 'bg-gray-400 text-gray-800 cursor-not-allowed'
+                        }`}
+                      >
+                        {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                      </button>
+                    ) : (
+                      <Link href="/login" className="w-full block text-center py-2 rounded-lg font-medium transition-colors bg-indigo-600 text-white hover:bg-indigo-700">
+                        Login to Buy
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

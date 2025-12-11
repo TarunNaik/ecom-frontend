@@ -15,8 +15,18 @@ interface UserProfile {
   imageUrl?: string;
 }
 
+interface Stats {
+  activeOrders: number;
+  itemsInWishlist: number;
+  // Add more stats as needed
+}
+
 export default function BuyerDashboard() {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [stats, setStats] = useState<Stats>({
+    activeOrders: 0,
+    itemsInWishlist: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -39,8 +49,24 @@ export default function BuyerDashboard() {
     }
 
     setUser(userData);
-    setLoading(false);
+    fetchStats();
   }, [router]);
+
+  const fetchStats = async () => {
+    try {
+      // TODO: Implement API calls for buyer stats
+      // For now, using mock data
+      setStats({
+        activeOrders: 5,
+        itemsInWishlist: 12,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      setError("Failed to load stats.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -56,6 +82,20 @@ export default function BuyerDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <WelcomeBanner user={user} />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <DashboardCard
+            title="Active Orders"
+            value={stats.activeOrders}
+            icon="🚚"
+          />
+          <DashboardCard
+            title="Items in Wishlist"
+            value={stats.itemsInWishlist}
+            icon="❤️"
+          />
+          {/* Add more summary cards as needed */}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <DashboardCard

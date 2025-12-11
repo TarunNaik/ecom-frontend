@@ -283,6 +283,25 @@ export default function VendorProducts() {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
+      const payload: any = { id: editingProduct.id };
+      if (formData.name !== editingProduct.name) payload.name = formData.name;
+      if (formData.description !== editingProduct.description) payload.description = formData.description;
+      if (parseFloat(formData.price) !== editingProduct.price) {
+        payload.price = parseFloat(formData.price);
+        payload.currency = formData.currency;
+      } else if (formData.currency !== editingProduct.currency) {
+        payload.currency = formData.currency;
+      }
+      if (parseInt(formData.stock) !== editingProduct.stock) payload.stock = parseInt(formData.stock);
+      if (formData.category !== editingProduct.category) payload.category = formData.category;
+      if (formData.image !== (editingProduct.image || "")) payload.image = formData.image;
+
+      // Check if there are any changes to update
+      if (Object.keys(payload).length === 1) {
+        alert("No changes to update.");
+        return;
+      }
+
       const response = await fetch(
         `/api/v1/product/update/${editingProduct.id}`,
         {
@@ -290,15 +309,7 @@ export default function VendorProducts() {
           mode: "cors",
           credentials: "include",
           headers,
-          body: JSON.stringify({
-            name: formData.name,
-            description: formData.description,
-            price: parseFloat(formData.price),
-            stock: parseInt(formData.stock),
-            category: formData.category,
-            image: formData.image,
-            currency: formData.currency,
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
@@ -330,7 +341,9 @@ export default function VendorProducts() {
 
     try {
       const token = localStorage.getItem('authToken');
-      const headers: HeadersInit = {};
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
       
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
